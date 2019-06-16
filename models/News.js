@@ -17,8 +17,12 @@ const NewsSchema = new Schema ({
     url: {
         type: String,
         required: 'URL source to original article is required'
+    },
+    // Object to place the Note id to link to the Note model. Use to populate article with a Note
+    note: {
+        type: Schema.Types.ObjectId,
+        ref: "Note"
     }
-    //FEEL FREE TO ADD IN A VIDEO CONTENT TO THE DATABASE
 });
 
 // To create the model from the above schema code, using the mongoose model method
