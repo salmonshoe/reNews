@@ -1,7 +1,6 @@
 const express = require('express');
 const logger = require("morgan");
 const mongoose = require('mongoose');
-const exphbs = require('express-handlebars');
 
 // Scraping Tools
 const axios = require('axios');
@@ -16,17 +15,19 @@ app.use(logger("dev"));
 app.use(express.static('public'));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-app.engine('handlebars', exphbs({ defaultLayout: "main" }));
-app.set("view engine", "handlebars");
+// app.engine('handlebars', exphbs({ defaultLayout: "main" }));
+// app.set("view engine", "handlebars");
 
 // Connect to MongoDB
 mongoose.connect("mongodb://localhost/reNews", { useNewUrlParser: true });
 
-// Routing
-app.get('/', (req, res) => {
-    res.render('home');
-});
+// For Mongo Deployment
+var MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost/mongoHeadlines";
 
+mongoose.connect(MONGODB_URI);
+
+
+// Routing
 app.get("/scrape", (req, res) => {
     axios.get("https://skateboarding.transworld.net/tag/best-of-web/").then(function (response) {
         const $ = cheerio.load(response.data);
@@ -59,6 +60,30 @@ app.get('/articles', (req, res) => {
         .catch(function (err) {
             res.json(err);
         });
+});
+
+app.get('/articles/:id', (req, res) => {
+    db.News.findOne({ _id: req.params.id })
+      .populate("note")
+      .then((dbNews) => {
+          res.json(dbNews);
+      })
+      .catch((err) => {
+          res.json(err);
+      });
+});
+
+app.post('/articles/:id', (req, res) => {
+    db.Note.create(req.body)
+      .then((dbNote) => {
+          return db.News.findOneAndUpdate({ _id: req.params.id }, { note: dbNote._id }, { new: true });
+      })
+      .then((dbNews) => {
+          res.json(dbNews);
+      })
+      .catch((err) => {
+          res.json(err);
+      });
 });
 
 app.listen(PORT, () => {
