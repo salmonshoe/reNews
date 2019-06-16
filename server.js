@@ -22,7 +22,7 @@ app.use(express.json());
 mongoose.connect("mongodb://localhost/reNews", { useNewUrlParser: true });
 
 // For Mongo Deployment
-var MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost/mongoHeadlines";
+var MONGODB_URI = process.env.MONGODB_URI || process.env.MONGO_MLAB;
 
 mongoose.connect(MONGODB_URI);
 
